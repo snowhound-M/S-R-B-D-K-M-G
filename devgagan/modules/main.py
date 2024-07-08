@@ -94,7 +94,7 @@ async def batch_link(_, message):
         try:
             users_loop[user_id] = True
             
-            for i in range(int(s), int(l)):
+            for i in range(int(s), int(l) + 1):
                 if user_id in users_loop and users_loop[user_id]:
                     msg = await app.send_message(message.chat.id, "Processing!")
                     try:
@@ -117,7 +117,7 @@ async def batch_link(_, message):
             await app.send_message(message.chat.id, f"Error: {str(e)}")
                     
     except FloodWait as fw:
-        await app.send_message(message.chat.id, f'Try again after {fw.x} seconds due to floodwait from Telegram.')
+        await app.send_message(message.chat.id, f'Try again after {fw.value} seconds due to floodwait from Telegram.')
     except Exception as e:
         await app.send_message(message.chat.id, f"Error: {str(e)}")
 
