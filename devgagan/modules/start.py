@@ -14,9 +14,31 @@ buttons = InlineKeyboardMarkup(
     ]
 )
 
-CONTACT_URL = "tg://openmessage?user_id=6621306807"
+command_buttons = InlineKeyboardMarkup(
+    [
+        [
+            InlineKeyboardButton("Admin Commands", callback_data="ac"),
+            InlineKeyboardButton("User Commands", callback_data="uc")
+        ]
+    ]
+)
 
-HELP_TEXT = """Here are the available commands:
+COMMAND_TEXT = f"`CHECK BOT COMMANDS USING THE BUTTONS GIVEN BELOW.`"
+
+ADMIN_COMMANDS_LIST = """/auth - Update a user for premium authorization.
+
+/remove - Delete a user from premium.
+
+/stats - Know your Bot status.
+
+/broadcast - Broadcast a message (with forwarding).
+
+/announce - Broadcast a message (without forwarding).
+
+/check - Search a premium user."""
+
+
+USER_COMMANDS_LIST = """Here are the available commands:
 
 /batch - Download bulk links one by one.
 
@@ -32,22 +54,7 @@ HELP_TEXT = """Here are the available commands:
 
 /settings - Open settings to set your requirements.
 
-/cancel - Stop batch processing.
-
-/auth [Admin Only] - Update a user for premium authorization.
-
-/remove [Admin Only] - Delete a user from premium.
-
-/stats [Admin Only] - Know your Bot status.
-
-/broadcast [Admin Only] - Broadcast a message (with forwarding).
-
-/announce [Admin Only] - Broadcast a message (without forwarding).
-
-/check [Admin Only] - Search a premium user.
-
-[Contact Admin Here](%s)
-""" % CONTACT_URL
+/cancel - Stop batch processing."""
 
 
 @app.on_message(filters.command("start"))
@@ -60,6 +67,20 @@ async def start(_, message):
                               caption=script.START_TXT.format(message.from_user.mention), 
                               reply_markup=buttons)
 
-@app.on_message(filters.command("/help"))
+@app.on_message(filters.command("commands"))
 async def user_help(_, message):
-    await app.send_message(message.chat.id, HELP_TEXT)
+    await app.send_message(chat_id=message.chat.id, text=COMMAND_TEXT, reply_markup=command_buttons)
+
+@app.on_callback_query()
+async def callback_query_handler(_, callback_query):
+    user_id = callback_query.from_user.id
+    
+    if callback_query.data == "ac":
+        if user_id in OWNER_ID:
+             return await callback_query.message.edit_text(ADMIN_COMMANDS_LIST)
+        else:
+             return await callback_query.answer(text=f"SORRY! Only **Admin** can view these commands.", show_alert=True)
+            
+    elif callback_query.data == "uc":
+        return await callback_query.message.edit_text(USER_COMMANDS_LIST)
+    
