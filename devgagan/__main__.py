@@ -1,6 +1,8 @@
 import asyncio
 import importlib
 from pyrogram import idle
+from devgagan import app
+from config import CHANNEL_ID
 from devgagan.modules import ALL_MODULES
 
  
@@ -17,4 +19,5 @@ async def devggn_boot():
 
 
 if __name__ == "__main__":
+    app.send_message(CHANNEL_ID, f"~ **M. Player.** started")
     loop.run_until_complete(devggn_boot())
