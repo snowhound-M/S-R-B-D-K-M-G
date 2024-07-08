@@ -89,7 +89,7 @@ async def batch_link(_, message):
             except:
                 return await app.send_message(message.chat.id, "Please generate a new session.")
         else:
-            await app.send_message(message.chat.id, "Please generate a session first.")
+            return await app.send_message(message.chat.id, "Please generate a session first.")
 
         try:
             users_loop[user_id] = True
@@ -113,6 +113,7 @@ async def batch_link(_, message):
                         continue
                 else:
                     break
+            await app.send_message(message.chat.id, "Batch Completed.")   
         except Exception as e:
             await app.send_message(message.chat.id, f"Error: {str(e)}")
                     
