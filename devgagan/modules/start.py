@@ -16,6 +16,7 @@ buttons = InlineKeyboardMarkup(
 
 @app.on_message(filters.command("start"))
 async def start(_, message):
+    await message.reply(f"IDs : {OWNER_ID}")
     join = await subscribe(_, message)
     if join == 1:
         return
