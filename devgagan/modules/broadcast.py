@@ -60,16 +60,19 @@ async def announced(_, message):
       to_send=message.reply_to_message.id
     if not message.reply_to_message:
       return await message.reply_text("Reply To Some Post To Broadcast")
+    exmsg = await message.reply_text("sᴛᴀʀᴛᴇᴅ ʙʀᴏᴀᴅᴄᴀsᴛɪɴɢ!")
     users = await get_users() or []
     print(users)
-    failed_user = 0
+    done_users = 0
+    failed_users = 0
   
     for user in users:
       try:
         await _.forward_messages(chat_id=int(user), from_chat_id=message.chat.id, message_ids=to_send)
+        done_users += 1
         await asyncio.sleep(1)
       except Exception as e:
-        failed_user += 1
+        failed_users += 1
           
     if failed_users == 0:
         await exmsg.edit_text(
