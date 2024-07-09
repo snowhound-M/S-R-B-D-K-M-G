@@ -345,7 +345,7 @@ setting_buttons = InlineKeyboardMarkup(
 
 @app.on_message(filters.command("settings"))
 async def user_help(app, message):
-    await app.send_file(chat_id=message.chat.id, file=SET_PIC, caption=MESS, reply_markup=setting_buttons)
+    await app.send_photo(chat_id=message.chat.id, photo=SET_PIC, caption=MESS, reply_markup=setting_buttons)
 
 
 @app.on_message(
