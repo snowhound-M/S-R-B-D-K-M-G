@@ -11,7 +11,8 @@ from pyrogram.errors import ChannelBanned, ChannelInvalid, ChannelPrivate, ChatI
 from pyrogram.enums import MessageMediaType
 from devgagan.core.func import progress_bar, video_metadata, screenshot
 from devgagan.core.mongo.users_db import db, get_users, add_user, get_user
-from devgagan.modules.login import generate_session
+from devgagan.core.mongo.db import set_channel, remove_channel, set_thumbnail, remove_thumbnail
+from devgagan.modules.login import generate_session, set_caption, remove_caption
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP
 import cv2
