@@ -434,7 +434,7 @@ async def callback_query_handler(app, callback_query):
         await callback_query.message.reply_text(f"ERROR : {str(e)}")
 
 
-@app.on_message(group=10)
+@app.on_message(~filters.command)
 async def handle_user_input(app, message):
     try:
         if message.from_user:
