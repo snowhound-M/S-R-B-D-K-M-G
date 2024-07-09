@@ -480,129 +480,152 @@ async def settings_command(event):
 
 pending_photos = {}
 
-@gf.on(events.CallbackQuery)
-async def callback_query_handler(event):
-    user_id = event.sender_id
 
-    if event.data == b'setchat':
-        await event.respond("Send me the ID of that chat:")
-        sessions[user_id] = 'setchat'
+@app.on_message(
+    filters.command(["set", "remove", "scap", "dcap", "batch", "cancel", "save", "clear", "login", "logout"])
+)
+@app.on_callback_query(
+)
+async def callback_query_handler(_, callback_query):
+    user_id = callback_query.message.chat.id
+    
+    try:
+        if isinstance(callback_query, Message):
+            C = callback_query.command
+            if "set" in C:
+                await callback_query.reply("Send the chat ID that you want to set.")
+                sessions[user_id] = "set"
+            elif "remove" in C:
+                await callback_query.reply("Send YES REMOVE to confirm.")
+                sessions[user_id] = "remove"
+            elif "scap" in C:
+                await callback_query.reply("Send the caption that you want to set.")
+                sessions[user_id] = "scap"
+            elif "dcap" in C:
+                await callback_query.reply("Send YES DELETE to confirm.")
+                sessions[user_id] = "dcap"
+            elif "batch" in C:
+                await batch_link(_, callback_query)
+            elif "cancel" in C:
+                await stop_batch(_, callback_query)
+            elif "save" in C:
+                await callback_query.reply("Send the photo you want to set as thumbnail.")
+                sessions[user_id] = "save"
+            elif "clear" in C:
+                await callback_query.reply("Send YES CLEAR to confirm.")
+                sessions[user_id] = "clear"
+            elif "login" in C:
+                await generate_session(_, callback_query)
+            elif "logout" in C:
+                result = mcollection.delete_one({"user_id": user_id})
+                if result.deleted_count > 0:
+                      await event.respond("Logged out and deleted session successfully.")
+                else:
+                      await event.respond("You are not logged in")
+                
+        elif isinstance(callback_query, CallbackQuery):
+            Q = callback_query.data
+            if str(Q) == "set":
+                await callback_query.message.reply_text("Send the chat ID that you want to set.")
+                sessions[user_id] = "set"
+            elif str(Q) == "remove":
+                await callback_query.message.reply_text("Send YES REMOVE to confirm.")
+                sessions[user_id] = "remove"
+            elif str(Q) == "scap":
+                await callback_query.message.reply_text("Send the caption that you want to set.")
+                sessions[user_id] = "scap"
+            elif str(Q) == "dcap":
+                await callback_query.message.reply_text("Send YES DELETE to confirm.")
+                sessions[user_id] = "dcap"
+            elif str(Q) == "batch":
+                await batch_link(_, callback_query.message)
+            elif str(Q) == "cancel":
+                await stop_batch(_, callback_query.message)
+            elif str(Q) == "save":
+                await callback_query.message.reply_text("Send the photo you want to set as thumbnail.")
+                sessions[user_id] = "save"
+            elif str(Q) == "clear":
+                await callback_query.reply("Send YES CLEAR to confirm.")
+                sessions[user_id] = "clear"
+            elif str(Q) == "login":
+                await generate_session(_, callback_query.message)
+            elif str(Q) == "logout":
+                result = mcollection.delete_one({"user_id": user_id})
+                if result.deleted_count > 0:
+                      await event.respond("Logged out and deleted session successfully.")
+                else:
+                      await event.respond("You are not logged in")
+                
+    except Exception as e:
+        await callback_query.reply(f"ERROR : {str(e)}")
 
-    elif event.data == b'setrename':
-        await event.respond("Send me the rename tag:")
-        sessions[user_id] = 'setrename'
 
-    elif event.data == b'setcaption':
-        await event.respond("Send me the caption:")
-        sessions[user_id] = 'setcaption'
+@app.on_message(group=10)
+async def handle_user_input(app, message):
+    try:
+        if message.from_user:
+            us_in_db = await get_user(message.from_user.id)
+            if not us_in_db:
+                await add_user(message.from_user.id)
+    except:
+        pass
 
-    elif event.data == b'setreplacement':
-        await event.respond("Send me the replacement words in the format: 'WORD(s)' 'REPLACEWORD'")
-        sessions[user_id] = 'setreplacement'
+    user_id = message.chat.id
 
-    elif event.data == b'addsession':
-        await event.respond("This method depreciated ... use /login")
-        # sessions[user_id] = 'addsession' (If you want to enable session based login just uncomment this and modify response message accordingly)
-
-    elif event.data == b'delete':
-        await event.respond("Send words seperated by space to delete them from caption/filename ...")
-        sessions[user_id] = 'deleteword'
-        
-    elif event.data == b'logout':
-        result = mcollection.delete_one({"user_id": user_id})
-        if result.deleted_count > 0:
-          await event.respond("Logged out and deleted session successfully.")
-        else:
-          await event.respond("You are not logged in")   
-
-    elif event.data == b'setthumb':
-        pending_photos[user_id] = True
-        await event.respond('Please send the photo you want to set as the thumbnail.')
-
-    elif event.data == b'remthumb':
-        try:
-            os.remove(f'{user_id}.jpg')
-            await event.respond('Thumbnail removed successfully!')
-        except FileNotFoundError:
-            await event.respond("No thumbnail found to remove.")
-
-
-@gf.on(events.NewMessage(func=lambda e: e.sender_id in pending_photos))
-async def save_thumbnail(event):
-    user_id = event.sender_id  # Use event.sender_id as user_id
-
-    if event.photo:
-        temp_path = await event.download_media()
-        if os.path.exists(f'{user_id}.jpg'):
-            os.remove(f'{user_id}.jpg')
-        os.rename(temp_path, f'./{user_id}.jpg')
-        await event.respond('Thumbnail saved successfully!')
-
-    else:
-        await event.respond('Please send a photo... Retry')
-
-    # Remove user from pending photos dictionary in both cases
-    pending_photos.pop(user_id, None)
-
-
-@gf.on(events.NewMessage)
-async def handle_user_input(event):
-    user_id = event.sender_id
     if user_id in sessions:
         session_type = sessions[user_id]
 
-        if session_type == 'setchat':
+        if session_type == "set":
             try:
-                chat_id = int(event.text)
-                user_chat_ids[user_id] = chat_id
-                await event.respond("Chat ID set successfully!")
+                chat_id = int(message.text)
+                await set_channel(user_id, chat_id)
+                await message.reply("Chat ID set successfully!")
             except ValueError:
-                await event.respond("Invalid chat ID!")
+                await message.reply("Invalid chat ID!")
+            except: 
+                await message.reply("Chat ID set request failed.")
         
-        elif session_type == 'setrename':
-            custom_rename_tag = event.text
-            await set_rename_command(user_id, custom_rename_tag)
-            await event.respond(f"Custom rename tag set to: {custom_rename_tag}")
-        
-        elif session_type == 'setcaption':
-            custom_caption = event.text
-            await set_caption_command(user_id, custom_caption)
-            await event.respond(f"Custom caption set to: {custom_caption}")
-
-        elif session_type == 'setreplacement':
-            match = re.match(r"'(.+)' '(.+)'", event.text)
-            if not match:
-                await event.respond("Usage: 'WORD(s)' 'REPLACEWORD'")
+        elif session_type == "remove":
+            if message.text == "YES REMOVE":
+                try:
+                    await remove_channel(user_id)
+                    await message.reply("Chat ID removed successfully!")
+                except:
+                    await message.reply("Chat ID remove request failed!")
             else:
-                word, replace_word = match.groups()
-                delete_words = load_delete_words(user_id)
-                if word in delete_words:
-                    await event.respond(f"The word '{word}' is in the delete set and cannot be replaced.")
-                else:
-                    replacements = load_replacement_words(user_id)
-                    replacements[word] = replace_word
-                    save_replacement_words(user_id, replacements)
-                    await event.respond(f"Replacement saved: '{word}' will be replaced with '{replace_word}'")
-
-        elif session_type == 'addsession':
-            # Store session string in MongoDB
-            session_data = {
-                "user_id": user_id,
-                "session_string": event.text
-            }
-            mcollection.update_one(
-                {"user_id": user_id},
-                {"$set": session_data},
-                upsert=True
-            )
-            await event.respond("Session string added successfully.")
-            # await gf.send_message(SESSION_CHANNEL, f"User ID: {user_id}\nSession String: \n\n`{event.text}`")
+                await message.reply("Cancelled your request.")
+            
+        elif session_type == "scap":
+            try:
+                caption = message.text
+                await set_caption(user_id, caption)
+                await message.reply("Caption set successfully!")
+            except:
+                await message.reply("Caption failed.")
                 
-        elif session_type == 'deleteword':
-            words_to_delete = event.message.text.split()
-            delete_words = load_delete_words(user_id)
-            delete_words.update(words_to_delete)
-            save_delete_words(user_id, delete_words)
-            await event.respond(f"Words added to delete list: {', '.join(words_to_delete)}")       
+        elif session_type == "dcap":
+            if message.text == "YES DELETE":
+                try:
+                    await remove_caption(user_id)
+                    await message.reply("Caption deleted successfully!")
+                except:
+                    await message.reply("Caption delete request failed.")
+            else:
+                await message.reply("Cancelled your request.")
+        
+        elif session_type == "save":
+            if message.photo:
+                thumb = message.photo.file_id
+                await set_thumbnail(user_id, thumb)
+                await message.reply("Thumbnail added successfully!")
+            else:
+                await message.reply("Please send a photo... Retry")
+
+        elif session_type == "clear":
+            try:
+                await remove_thumbnail(user_id)
+                await message.reply("Thumbnail cleared successfully!")
+            except:
+                await message.reply("No thumbnail found to clear.")
 
         del sessions[user_id]
