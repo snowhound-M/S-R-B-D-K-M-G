@@ -385,7 +385,7 @@ async def callback_query_handler(app, callback_query):
                 sessions[user_id] = "clear"
             elif "login" in C:
                 string_session = await generate_session(app, callback_query)
-                await mcollection.set_session(user_id, string_session)
+                await set_session(user_id, string_session)
                 await callback_query.reply("✅ Login successful!")
             elif "logout" in C:
                 result = await remove_session(user_id)
@@ -421,7 +421,7 @@ async def callback_query_handler(app, callback_query):
                 sessions[user_id] = "clear"
             elif str(Q) == "login":
                 string_session = await generate_session(app, callback_query)
-                await mcollection.set_session(user_id, string_session)
+                await set_session(user_id, string_session)
                 await callback_query.message.reply_text("✅ Login successful!")
             elif str(Q) == "logout":
                 result = await remove_session(user_id)
