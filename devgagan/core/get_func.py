@@ -265,57 +265,6 @@ m_client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
 mdb = m_client[MDB_NAME]
 mcollection = mdb[MCOLLECTION_NAME]
 
-def load_delete_words(user_id):
-    """
-    Load delete words for a specific user from MongoDB
-    """
-    try:
-        words_data = collection.find_one({"_id": user_id})
-        if words_data:
-            return set(words_data.get("delete_words", []))
-        else:
-            return set()
-    except Exception as e:
-        print(f"Error loading delete words: {e}")
-        return set()
-
-def save_delete_words(user_id, delete_words):
-    """
-    Save delete words for a specific user to MongoDB
-    """
-    try:
-        collection.update_one(
-            {"_id": user_id},
-            {"$set": {"delete_words": list(delete_words)}},
-            upsert=True
-        )
-    except Exception as e:
-        print(f"Error saving delete words: {e}")
-
-def load_replacement_words(user_id):
-    try:
-        words_data = collection.find_one({"_id": user_id})
-        if words_data:
-            return words_data.get("replacement_words", {})
-        else:
-            return {}
-    except Exception as e:
-        print(f"Error loading replacement words: {e}")
-        return {}
-
-def save_replacement_words(user_id, replacements):
-    try:
-        collection.update_one(
-            {"_id": user_id},
-            {"$set": {"replacement_words": replacements}},
-            upsert=True
-        )
-    except Exception as e:
-        print(f"Error saving replacement words: {e}")
-
-# Initialize the dictionary to store user preferences for renaming
-user_rename_preferences = {}
-
 # Initialize the dictionary to store user caption
 user_caption_preferences = {}
 
@@ -326,16 +275,6 @@ def load_user_session(sender_id):
         return user_data.get("session")
     else:
         return None  # Or handle accordingly if session doesn't exist
-
-# Function to handle the /setrename command
-async def set_rename_command(user_id, custom_rename_tag):
-    # Update the user_rename_preferences dictionary
-    user_rename_preferences[str(user_id)] = custom_rename_tag
-
-# Function to get the user's custom renaming preference
-def get_user_rename_preference(user_id):
-    # Retrieve the user's custom renaming tag if set, or default to '@devggn'
-    return user_rename_preferences.get(str(user_id), '@devggn')
 
 # Function to set custom caption preference
 async def set_caption_command(user_id, custom_caption):
@@ -392,7 +331,7 @@ async def user_help(app, message):
 )
 @app.on_callback_query(
 )
-async def callback_query_handler(_, callback_query):
+async def callback_query_handler(app, callback_query):
     user_id = callback_query.message.chat.id
     
     try:
@@ -411,9 +350,9 @@ async def callback_query_handler(_, callback_query):
                 await callback_query.reply("Send YES DELETE to confirm.")
                 sessions[user_id] = "dcap"
             elif "batch" in C:
-                await batch_link(_, callback_query)
+                await batch_link(app, callback_query)
             elif "cancel" in C:
-                await stop_batch(_, callback_query)
+                await stop_batch(app, callback_query)
             elif "save" in C:
                 await callback_query.reply("Send the photo you want to set as thumbnail.")
                 sessions[user_id] = "save"
@@ -421,7 +360,7 @@ async def callback_query_handler(_, callback_query):
                 await callback_query.reply("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif "login" in C:
-                await generate_session(_, callback_query)
+                await generate_session(app, callback_query)
             elif "logout" in C:
                 result = mcollection.delete_one({"user_id": user_id})
                 if result.deleted_count > 0:
@@ -444,9 +383,9 @@ async def callback_query_handler(_, callback_query):
                 await callback_query.message.reply_text("Send YES DELETE to confirm.")
                 sessions[user_id] = "dcap"
             elif str(Q) == "batch":
-                await batch_link(_, callback_query.message)
+                await batch_link(app, callback_query.message)
             elif str(Q) == "cancel":
-                await stop_batch(_, callback_query.message)
+                await stop_batch(app, callback_query.message)
             elif str(Q) == "save":
                 await callback_query.message.reply_text("Send the photo you want to set as thumbnail.")
                 sessions[user_id] = "save"
@@ -454,7 +393,7 @@ async def callback_query_handler(_, callback_query):
                 await callback_query.reply("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif str(Q) == "login":
-                await generate_session(_, callback_query.message)
+                await generate_session(app, callback_query.message)
             elif str(Q) == "logout":
                 result = mcollection.delete_one({"user_id": user_id})
                 if result.deleted_count > 0:
