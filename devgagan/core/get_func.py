@@ -358,7 +358,7 @@ async def callback_query_handler(app, callback_query):
     
     try:
         if isinstance(callback_query, Message):
-            user_id = callback_query.chat.id
+            user_id = callback_query.from_user.id
             C = callback_query.command
             if "set" in C:
                 await callback_query.reply("Send the chat ID that you want to set.")
@@ -394,7 +394,7 @@ async def callback_query_handler(app, callback_query):
                     await callback_query.reply("You are not logged in")
                 
         elif isinstance(callback_query, CallbackQuery):
-            user_id = callback_query.message.chat.id
+            user_id = callback_query.from_user.id
             Q = callback_query.data
             if str(Q) == "set":
                 await callback_query.message.reply_text("Send the chat ID that you want to set.")
