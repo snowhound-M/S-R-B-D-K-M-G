@@ -431,10 +431,12 @@ async def callback_query_handler(app, callback_query):
                     await callback_query.message.reply_text("You are not logged in")
                 
     except Exception as e:
-        await callback_query.message.reply_text(f"ERROR : {str(e)}")
+        if isinstance(callback_query, Message):
+            await callback_query.reply(f"ERROR : {str(e)}")
+        elif isinstance(callback_query, CallbackQuery):
+            await callback_query.message.reply_text(f"ERROR : {str(e)}")
 
-
-@app.on_message(~filters.command)
+@app.on_message(filters.private & ~filters.command)
 async def handle_user_input(app, message):
     try:
         if message.from_user:
