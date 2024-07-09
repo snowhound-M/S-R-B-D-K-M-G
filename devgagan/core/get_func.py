@@ -76,47 +76,7 @@ async def get_msg(userbot, sender, edit_id, msg_link, i, message):
                 progress=progress_bar,
                 progress_args=("**__Downloading: __**\n",edit,time.time()))
             
-            custom_rename_tag = get_user_rename_preference(chatx)
-            last_dot_index = str(file).rfind('.')
-            if last_dot_index != -1 and last_dot_index != 0:
-                ggn_ext = str(file)[last_dot_index + 1:]
-                if ggn_ext.isalpha() and len(ggn_ext) <= 4:
-                    original_file_name = str(file)[:last_dot_index]
-                    file_extension = str(file)[last_dot_index + 1:]
-                else:
-                    original_file_name = str(file)
-                    file_extension = 'mp4'
-            else:
-                original_file_name = str(file)
-                file_extension = 'mp4'
-
-            delete_words = load_delete_words(chatx)
-            for word in delete_words:
-                original_file_name = original_file_name.replace(word, "")
-            new_file_name = original_file_name + " " + custom_rename_tag + "." + file_extension
-            os.rename(file, new_file_name)
-            file = new_file_name            
-            
             await edit.edit('Preparing to Upload...')
-
-            # c = await db.get_data(sender)
-            # caption = None
-            
-            # if c.get("caption"):
-            #     caption = c.get("caption")
-            # else:
-            #     caption = msg.caption
-            #     if c.get("clean_words"):
-            #         words = c.get("clean_words")
-            #         caption = remove_elements(words, caption)
-                    
-            #     if c.get("replace_txt") and c.get("to_replace"):
-            #         replace_txt = c.get("replace_txt")
-            #         to_replace = c.get("to_replace")
-            #         caption = replace_text(caption, replace_txt, to_replace)
-
-            
-
             
             if msg.media == MessageMediaType.VIDEO and msg.video.mime_type in ["video/mp4", "video/x-matroska"]:
 
