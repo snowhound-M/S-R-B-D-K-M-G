@@ -34,6 +34,8 @@ async def set_session(user_id, session):
     else:
         await dc.insert_one({"user_id": user_id, "session": session})
 
+async def remove_session(user_id):
+    await dc.update_one({"user_id": user_id}, {"$set": {"session": None}})
 
 async def set_channel(user_id, chat_id):
     data = await get_data(user_id)
@@ -49,8 +51,5 @@ async def remove_thumbnail(user_id):
 async def remove_caption(user_id):
     await dc.update_one({"user_id": user_id}, {"$set": {"caption": None}})
     
-async def remove_session(user_id):
-    await dc.update_one({"user_id": user_id}, {"$set": {"session": None}})
-
 async def remove_channel(user_id):
     await dc.update_one({"user_id": user_id}, {"$set": {"chat_id": None}})
