@@ -57,7 +57,6 @@ async def single_link(_, message):
 
 users_loop = {}
 
-@app.on_message(filters.command("batch"))
 async def batch_link(_, message):
     user_id = message.chat.id    
     lol = await chk_user(message, user_id)
@@ -122,8 +121,6 @@ async def batch_link(_, message):
     except Exception as e:
         await app.send_message(message.chat.id, f"Error: {str(e)}")
 
-
-@app.on_message(filters.command("cancel"))
 async def stop_batch(_, message):
     user_id = message.chat.id
     if user_id in users_loop:
