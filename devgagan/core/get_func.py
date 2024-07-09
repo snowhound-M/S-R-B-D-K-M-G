@@ -10,7 +10,7 @@ from pyrogram import filters
 from pyrogram.errors import ChannelBanned, ChannelInvalid, ChannelPrivate, ChatIdInvalid, ChatInvalid, PeerIdInvalid
 from pyrogram.enums import MessageMediaType
 from devgagan.core.func import progress_bar, video_metadata, screenshot
-from devgagan.core.mongo import db
+from devgagan.modules.login import generate_session
 from pyrogram.types import Message
 from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP
 import cv2
@@ -377,7 +377,9 @@ async def callback_query_handler(app, callback_query):
                 await callback_query.reply("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif "login" in C:
-                await generate_session(app, callback_query)
+                string_session = await generate_session(app, callback_query)
+                await mcollection.set_session(user_id, string_session)
+                await callback_query.reply("✅ Login successful!")
             elif "logout" in C:
                 result = await remove_session(user_id)
                 if result.deleted_count > 0:
@@ -410,7 +412,9 @@ async def callback_query_handler(app, callback_query):
                 await callback_query.reply("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif str(Q) == "login":
-                await generate_session(app, callback_query.message)
+                string_session = await generate_session(app, callback_query)
+                await mcollection.set_session(user_id, string_session)
+                await callback_query.reply("✅ Login successful!")
             elif str(Q) == "logout":
                 result = await remove_session(user_id)
                 if result.deleted_count > 0:
