@@ -96,23 +96,6 @@ async def get_msg(userbot, sender, edit_id, msg_link, i, message):
                     await edit.delete()
                     return
                 
-                delete_words = load_delete_words(sender)
-                custom_caption = get_user_caption_preference(sender)
-                original_caption = msg.caption if msg.caption else ''
-                final_caption = f"{original_caption}" if custom_caption else f"{original_caption}"
-                lines = final_caption.split('\n')
-                processed_lines = []
-                for line in lines:
-                    for word in delete_words:
-                        line = line.replace(word, '')
-                    if line.strip():
-                        processed_lines.append(line.strip())
-                final_caption = '\n'.join(processed_lines)
-                replacements = load_replacement_words(sender)
-                for word, replace_word in replacements.items():
-                    final_caption = final_caption.replace(word, replace_word)
-                caption = f"{final_caption}\n\n__**{custom_caption}**__" if custom_caption else f"{final_caption}"
-
                 target_chat_id = user_chat_ids.get(chatx, chatx)
                 
                 thumb_path = await screenshot(file, duration, chatx)              
@@ -146,23 +129,6 @@ async def get_msg(userbot, sender, edit_id, msg_link, i, message):
                     
             elif msg.media == MessageMediaType.PHOTO:
                 await edit.edit("**`Uploading photo...`")
-                delete_words = load_delete_words(sender)
-                custom_caption = get_user_caption_preference(sender)
-                original_caption = msg.caption if msg.caption else ''
-                final_caption = f"{original_caption}" if custom_caption else f"{original_caption}"
-                lines = final_caption.split('\n')
-                processed_lines = []
-                for line in lines:
-                    for word in delete_words:
-                        line = line.replace(word, '')
-                    if line.strip():
-                        processed_lines.append(line.strip())
-                final_caption = '\n'.join(processed_lines)
-                replacements = load_replacement_words(sender)
-                for word, replace_word in replacements.items():
-                    final_caption = final_caption.replace(word, replace_word)
-                caption = f"{final_caption}\n\n__**{custom_caption}**__" if custom_caption else f"{final_caption}"
-
                 target_chat_id = user_chat_ids.get(sender, sender)
                 devggn = await app.send_photo(chat_id=target_chat_id, photo=file, caption=caption)
                 if msg.pinned_message:
@@ -173,23 +139,6 @@ async def get_msg(userbot, sender, edit_id, msg_link, i, message):
                 await devggn.copy(LOG_GROUP)
             else:
                 thumb_path = thumbnail(chatx)
-                delete_words = load_delete_words(sender)
-                custom_caption = get_user_caption_preference(sender)
-                original_caption = msg.caption if msg.caption else ''
-                final_caption = f"{original_caption}" if custom_caption else f"{original_caption}"
-                lines = final_caption.split('\n')
-                processed_lines = []
-                for line in lines:
-                    for word in delete_words:
-                        line = line.replace(word, '')
-                    if line.strip():
-                        processed_lines.append(line.strip())
-                final_caption = '\n'.join(processed_lines)
-                replacements = load_replacement_words(chatx)
-                for word, replace_word in replacements.items():
-                    final_caption = final_caption.replace(word, replace_word)
-                caption = f"{final_caption}\n\n__**{custom_caption}**__" if custom_caption else f"{final_caption}"
-
                 target_chat_id = user_chat_ids.get(chatx, chatx)
                 try:
                     devggn = await app.send_document(
@@ -241,21 +190,6 @@ async def copy_message_with_chat_id(client, sender, chat_id, message_id):
     try:
         # Fetch the message using get_message
         msg = await client.get_messages(chat_id, message_id)
-        
-        # Modify the caption based on user's custom caption preference
-        custom_caption = get_user_caption_preference(sender)
-        original_caption = msg.caption if msg.caption else ''
-        final_caption = f"{original_caption}" if custom_caption else f"{original_caption}"
-        
-        delete_words = load_delete_words(sender)
-        for word in delete_words:
-            final_caption = final_caption.replace(word, '  ')
-        
-        replacements = load_replacement_words(sender)
-        for word, replace_word in replacements.items():
-            final_caption = final_caption.replace(word, replace_word)
-        
-        caption = f"{final_caption}\n\n__**{custom_caption}**__" if custom_caption else f"{final_caption}\n\n__**[Team SPY](https://t.me/devggn)**__"
         
         if msg.media:
             if msg.media == MessageMediaType.VIDEO:
