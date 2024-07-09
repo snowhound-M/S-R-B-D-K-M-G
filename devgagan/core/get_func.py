@@ -77,6 +77,11 @@ async def get_msg(userbot, sender, edit_id, msg_link, i, message):
                 progress_args=("**__Downloading: __**\n",edit,time.time()))
             
             await edit.edit('Preparing to Upload...')
+
+            try:
+                caption = msg.caption
+            except:
+                caption = ""
             
             if msg.media == MessageMediaType.VIDEO and msg.video.mime_type in ["video/mp4", "video/x-matroska"]:
 
