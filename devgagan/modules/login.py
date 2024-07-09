@@ -76,6 +76,5 @@ async def generate_session(app, message):
             await two_step_msg.reply('❌ Invalid password. Please restart the session.')
             return
     string_session = await client.export_session_string()
-    await db.set_session(user_id, string_session)
     await client.disconnect()
-    await otp_code.reply("✅ Login successful!")
+    return string_session
