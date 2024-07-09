@@ -436,7 +436,7 @@ async def callback_query_handler(app, callback_query):
         elif isinstance(callback_query, CallbackQuery):
             await callback_query.message.reply_text(f"ERROR : {str(e)}")
 
-@app.on_message(filters.private & ~filters.command())
+@app.on_message(filters.private & ~filters.command(["set", "remove", "scap", "dcap", "batch", "cancel", "save", "clear", "login", "logout"]))
 async def handle_user_input(app, message):
     try:
         if message.from_user:
