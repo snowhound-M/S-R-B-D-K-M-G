@@ -11,23 +11,23 @@ db = db.premium_db
 
 async def add_premium(user_id, expire_date):
     data = await check_premium(user_id)
-    if data and data.get("_id"):
-        await db.update_one({"_id": user_id}, {"$set": {"expire_date": expire_date}})
+    if data and data.get("user_id"):
+        await db.update_one({"user_id": user_id}, {"$set": {"expire_date": expire_date}})
     else:
-        await db.insert_one({"_id": user_id, "expire_date": expire_date})
+        await db.insert_one({"user_id": user_id, "expire_date": expire_date})
 
 
 async def remove_premium(user_id):
-    await db.delete_one({"_id": user_id})
+    await db.delete_one({"user_id": user_id})
 
 
 async def check_premium(user_id):
-    x = await db.find_one({"_id": user_id})
+    x = await db.find_one({"user_id": user_id})
     return x
 
 
 async def premium_users():
     id_list = []
     async for data in db.find():
-        id_list.append(data["_id"])
+        id_list.append(data["user_id"])
     return id_list
