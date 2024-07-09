@@ -5,7 +5,7 @@ from devgagan import app
 from config import API_ID, API_HASH
 from devgagan.core.get_func import get_msg
 from devgagan.core.func import *
-from devgagan.core.mongo import db
+from devgagan.core.mongo import 
 from pyrogram.errors import FloodWait
 
 
@@ -25,7 +25,7 @@ async def single_link(app, message):
             return
      
         msg = await message.reply("Processing!")
-        data = await db.get_data(user_id)
+        data = await mcollection.access_data(user_id)
         
         if data and data.get("session"):
             session = data.get("session")
@@ -50,7 +50,7 @@ async def single_link(app, message):
             await msg.edit_text(f"Link: `{link}`\n\n**Error:** {str(e)}")
                     
     except FloodWait as fw:
-        await msg.edit_text(f'Try again after {fw.x} seconds due to floodwait from telegram.')
+        await msg.edit_text(f'Try again after {fw.value} seconds due to floodwait from telegram.')
     except Exception as e:
         await msg.edit_text(f"Link: `{link}`\n\n**Error:** {str(e)}")
 
@@ -78,7 +78,7 @@ async def batch_link(app, message):
         return
     
     try:     
-        data = await db.get_data(user_id)
+        data = await mcollection.access_data(user_id)
         
         if data and data.get("session"):
             session = data.get("session")
