@@ -230,8 +230,8 @@ COLLECTION_NAME = "super_user"
 
 # Establish a connection to MongoDB
 mongo_client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
-db = mongo_client[DB_NAME]
-collection = db[COLLECTION_NAME]
+md = mongo_client[DB_NAME]
+collection = md[COLLECTION_NAME]
 
 def load_authorized_users():
     """
@@ -268,13 +268,22 @@ mcollection = mdb[MCOLLECTION_NAME]
 # Initialize the dictionary to store user caption
 user_caption_preferences = {}
 
-# Function to set user session to MongoDB
+# Function to access user data in MongoDB
+async def access_data(user_id):
+    x = await mcollection.find_one({"_id": user_id})
+    return x
+
+# Function to set user session in MongoDB
 async def set_session(user_id, session):
     access = await access_data(user_id)
     if access and access.get("user_id"):
-        await db.update_one({"user_id": user_id}, {"$set": {"session": session}})
+        await mcollection.update_one({"user_id": user_id}, {"$set": {"session": session}})
     else:
-        await db.insert_one({"user_id": user_id, "session": session})
+        await mcollection.insert_one({"user_id": user_id, "session": session})
+
+async def remove_session(user_id):
+    result = mcollection.delete_one({"user_id": user_id})
+    return result
 
 # Function to load user session from MongoDB
 def load_user_session(sender_id):
@@ -370,11 +379,11 @@ async def callback_query_handler(app, callback_query):
             elif "login" in C:
                 await generate_session(app, callback_query)
             elif "logout" in C:
-                result = mcollection.delete_one({"user_id": user_id})
+                result = await remove_session(user_id)
                 if result.deleted_count > 0:
-                      await event.respond("Logged out and deleted session successfully.")
+                    await callback_query.reply("Logged out and deleted session successfully.")
                 else:
-                      await event.respond("You are not logged in")
+                    await callback_query.reply("You are not logged in")
                 
         elif isinstance(callback_query, CallbackQuery):
             Q = callback_query.data
@@ -403,11 +412,11 @@ async def callback_query_handler(app, callback_query):
             elif str(Q) == "login":
                 await generate_session(app, callback_query.message)
             elif str(Q) == "logout":
-                result = mcollection.delete_one({"user_id": user_id})
+                result = await remove_session(user_id)
                 if result.deleted_count > 0:
-                      await event.respond("Logged out and deleted session successfully.")
+                    await callback_query.reply("Logged out and deleted session successfully.")
                 else:
-                      await event.respond("You are not logged in")
+                    await callback_query.reply("You are not logged in")
                 
     except Exception as e:
         await callback_query.reply(f"ERROR : {str(e)}")
