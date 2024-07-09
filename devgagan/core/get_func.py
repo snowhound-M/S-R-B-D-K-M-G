@@ -268,6 +268,14 @@ mcollection = mdb[MCOLLECTION_NAME]
 # Initialize the dictionary to store user caption
 user_caption_preferences = {}
 
+# Function to set user session to MongoDB
+async def set_session(user_id, session):
+    access = await access_data(user_id)
+    if access and access.get("user_id"):
+        await db.update_one({"user_id": user_id}, {"$set": {"session": session}})
+    else:
+        await db.insert_one({"user_id": user_id, "session": session})
+
 # Function to load user session from MongoDB
 def load_user_session(sender_id):
     user_data = collection.find_one({"user_id": sender_id})
