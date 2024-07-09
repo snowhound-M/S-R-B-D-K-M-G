@@ -417,21 +417,21 @@ async def callback_query_handler(app, callback_query):
                 await callback_query.message.reply_text("Send the photo you want to set as thumbnail.")
                 sessions[user_id] = "save"
             elif str(Q) == "clear":
-                await callback_query.reply("Send YES CLEAR to confirm.")
+                await callback_query.message.reply_text("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif str(Q) == "login":
                 string_session = await generate_session(app, callback_query)
                 await mcollection.set_session(user_id, string_session)
-                await callback_query.reply("✅ Login successful!")
+                await callback_query.message.reply_text("✅ Login successful!")
             elif str(Q) == "logout":
                 result = await remove_session(user_id)
                 if result.deleted_count > 0:
-                    await callback_query.reply("Logged out and deleted session successfully.")
+                    await callback_query.message.reply_text("Logged out and deleted session successfully.")
                 else:
-                    await callback_query.reply("You are not logged in")
+                    await callback_query.message.reply_text("You are not logged in")
                 
     except Exception as e:
-        await callback_query.reply(f"ERROR : {str(e)}")
+        await callback_query.message.reply_text(f"ERROR : {str(e)}")
 
 
 @app.on_message(group=10)
