@@ -460,25 +460,37 @@ sessions = {}
 SET_PIC = "settings.jpg"
 MESS = "Customize by your end and Configure your settings ..."
 
-@gf.on(events.NewMessage(incoming=True, pattern='/settings'))
-async def settings_command(event):
-    buttons = [
-        [Button.inline("Set Chat ID", b'setchat'), Button.inline("Set Rename Tag", b'setrename')],
-        [Button.inline("Caption", b'setcaption'), Button.inline("Replace Words", b'setreplacement')],
-        [Button.inline("Remove Words", b'delete')],
-        [Button.inline("Login", b'addsession'), Button.inline("Logout", b'logout')],
-        [Button.inline("Set Thumbnail", b'setthumb'), Button.inline("Remove Thumbnail", b'remthumb')],
-        [Button.url("Report Errors", "https://t.me/devggn")]
+setting_buttons = InlineKeyboardMarkup(
+    [
+        [
+            InlineKeyboardButton("Set Chat ID", callback_data="set"),
+            InlineKeyboardButton("Remove Chat ID", callback_data="remove")
+        ],
+        [
+            InlineKeyboardButton("Set Caption", callback_data="scap"),
+            InlineKeyboardButton("Delete Caption", callback_data="dcap")
+        ],
+        [
+            InlineKeyboardButton("Create Batch", callback_data="batch"),
+            InlineKeyboardButton("Cancel Batch", callback_data="cancel")
+        ],
+        [
+            InlineKeyboardButton("Add Thumbnail", callback_data="add"),
+            InlineKeyboardButton("Remove Thumbnail", callback_data="clear")
+        ],
+        [
+            InlineKeyboardButton("Login", callback_data="login")
+        ],
+        [
+            InlineKeyboardButton("Logout", callback_data="logout")
+        ]
     ]
-    
-    await gf.send_file(
-        event.chat_id,
-        file=SET_PIC,
-        caption=MESS,
-        buttons=buttons
-    )
+)
 
-pending_photos = {}
+
+@app.on_message(filters.command("settings"))
+async def user_help(app, message):
+    await app.send_file(chat_id=message.chat.id, file=SET_PIC, caption=MESS, reply_markup=setting_buttons)
 
 
 @app.on_message(
