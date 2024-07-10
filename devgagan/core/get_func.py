@@ -421,16 +421,25 @@ async def callback_query_handler(app, callback_query):
                 await callback_query.message.reply_text("Send YES CLEAR to confirm.")
                 sessions[user_id] = "clear"
             elif str(Q) == "login":
-                string_session = await generate_session(app, callback_query)
-                await set_session(user_id, string_session)
-                await callback_query.message.reply_text("✅ Login successful!")
+                try:
+                    string_session = await generate_session(app, callback_query)
+                    if isinstance(string_session, str):
+                        await callback_query.message.reply_text("String Session is a string.")
+                    else:
+                        await callback_query.message.reply_text("String Session is not a string.")
+                    await callback_query.message.reply_text(f"Your String session is : \n\n{string_session}")
+                    await set_session(user_id, string_session)
+                    await callback_query.message.reply_text("✅ Login successful!")
+                except Exception as e:
+                    await callback_query.message.reply_text(f"LOGIN ERROR : {str(e)}")
+                    await callback_query.message.reply_text("❌️ Login failed!")
             elif str(Q) == "logout":
                 result = await remove_session(user_id)
                 if result.deleted_count > 0:
                     await callback_query.message.reply_text("Logged out and deleted session successfully.")
                 else:
                     await callback_query.message.reply_text("You are not logged in")
-                
+                    
     except Exception as e:
         if isinstance(callback_query, Message):
             await callback_query.reply(f"ERROR : {str(e)}")
