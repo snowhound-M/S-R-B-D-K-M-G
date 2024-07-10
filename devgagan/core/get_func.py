@@ -12,7 +12,6 @@ from pyrogram.enums import MessageMediaType
 from devgagan.core.func import *
 from devgagan.core.mongo.users_db import db, get_users, add_user, get_user
 from devgagan.core.mongo.db import set_channel, remove_channel, set_thumbnail, remove_thumbnail, set_caption, remove_caption
-from devgagan.modules.login import generate_session
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP, API_ID, API_HASH
 import cv2
@@ -21,14 +20,17 @@ from telethon import events, Button
 # ------------------------ Button Mode Editz FOR SETTINGS ----------------------------
 
 # Initialize the dictionary to store user caption
+
 user_caption_preferences = {}
 
 users_loop = {}
 
 # Initialize the dictionary to store user sessions
+
 sessions = {}
 
 # Define a dictionary to store user chat IDs
+
 user_chat_ids = {}
 
 # MongoDB database name and collection name
@@ -105,6 +107,7 @@ setting_buttons = InlineKeyboardMarkup(
 @app.on_message(filters.command("settings"))
 async def user_help(app, message):
     await app.send_photo(chat_id=message.chat.id, photo=SET_PIC, caption=MESS, reply_markup=setting_buttons)
+
 
 @app.on_message(
     filters.command(["set", "remove", "scap", "dcap", "batch", "cancel", "save", "clear", "login", "logout"])
@@ -200,6 +203,7 @@ async def callback_query_handler(app, callback_query):
             await callback_query.reply(f"ERROR : {str(e)}")
         elif isinstance(callback_query, CallbackQuery):
             await callback_query.message.reply_text(f"ERROR : {str(e)}")
+
 
 @app.on_message(filters.private & ~filters.command(["set", "remove", "scap", "dcap", "batch", "cancel", "save", "clear", "login", "logout"]))
 async def handle_user_input(app, message):
@@ -392,6 +396,7 @@ async def stop_batch(app, message):
     
 def thumbnail(sender):
     return f'{sender}.jpg' if os.path.exists(f'{sender}.jpg') else None
+
 
 async def get_msg(userbot, sender, edit_id, msg_link, i, message):
     edit = ""
