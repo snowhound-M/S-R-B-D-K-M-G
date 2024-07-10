@@ -11,7 +11,7 @@ from pyrogram.errors import FloodWait
 
 @app.on_message(filters.regex(r'https?://[^\s]+'))
 async def single_link(app, message):
-    user_id = message.chat.id
+    user_id = message.from_user.id
     lol = await chk_user(message, user_id)
     if lol == 1:
         return
@@ -57,7 +57,7 @@ async def single_link(app, message):
 users_loop = {}
 
 async def batch_link(app, message):
-    user_id = message.chat.id    
+    user_id = message.from_user.id    
     lol = await chk_user(message, user_id)
     if lol == 1:
         return    
