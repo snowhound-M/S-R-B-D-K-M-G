@@ -11,7 +11,7 @@ async def send_msg(user_id, message):
     try:
         await message.copy(chat_id=user_id)
     except FloodWait as e:
-        await asyncio.sleep(e.x)
+        await asyncio.sleep(e.value)
         return send_msg(user_id, message)
     except InputUserDeactivated:
         return 400, f"{user_id} : deactivated\n"
@@ -39,7 +39,6 @@ async def broadcast(_, message):
             done_users += 1
             await asyncio.sleep(0.1)
         except Exception:
-            pass
             failed_users += 1
     if failed_users == 0:
         await exmsg.edit_text(
