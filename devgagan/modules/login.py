@@ -3,7 +3,6 @@ from devgagan import app
 from pyromod import listen
 import random
 import string
-from devgagan.core.mongo import db
 from devgagan.core.func import subscribe, chk_user
 from config import API_ID as api_id, API_HASH as api_hash
 from pyrogram.errors import (
@@ -29,7 +28,7 @@ async def generate_session(app, message):
     if user_checked == 1:
         return
         
-    user_id = message.chat.id   
+    user_id = message.from_user.id   
     
     number = await app.ask(user_id, 'Please enter your phone number along with the country code. \nExample: +19876543210', filters=filters.text)   
     phone_number = number.text
