@@ -13,6 +13,7 @@ from devgagan.core.func import progress_bar, video_metadata, screenshot
 from devgagan.core.mongo.users_db import db, get_users, add_user, get_user
 from devgagan.core.mongo.db import set_channel, remove_channel, set_thumbnail, remove_thumbnail, set_caption, remove_caption
 from devgagan.modules.login import generate_session
+from devgagan.modules.main import batch_link, stop_batch
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP
 import cv2
