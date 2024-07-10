@@ -6,18 +6,137 @@ import requests
 from devgagan import app
 from devgagan import sex as gf
 import pymongo
-from pyrogram import filters
-from pyrogram.errors import ChannelBanned, ChannelInvalid, ChannelPrivate, ChatIdInvalid, ChatInvalid, PeerIdInvalid
+from pyrogram import filters, Client
+from pyrogram.errors import ChannelBanned, ChannelInvalid, ChannelPrivate, ChatIdInvalid, ChatInvalid, PeerIdInvalid, FloodWait
 from pyrogram.enums import MessageMediaType
-from devgagan.core.func import progress_bar, video_metadata, screenshot
+from devgagan.core.func import *
 from devgagan.core.mongo.users_db import db, get_users, add_user, get_user
 from devgagan.core.mongo.db import set_channel, remove_channel, set_thumbnail, remove_thumbnail, set_caption, remove_caption
 from devgagan.modules.login import generate_session
 from devgagan.modules.main import batch_link, stop_batch
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP
+from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP, API_ID, API_HASH
 import cv2
 from telethon import events, Button
+
+@app.on_message(filters.regex(r'https?://[^\s]+'))
+async def single_link(app, message):
+    user_id = message.from_user.id
+    lol = await chk_user(message, user_id)
+    if lol == 1:
+        return
+    
+    link = get_link(message.text) 
+    
+    try:
+        join = await subscribe(app, message)
+        if join == 1:
+            return
+     
+        msg = await message.reply("Processing!")
+        data = await mcollection.access_data(user_id)
+        
+        if data and data.get("session"):
+            session = data.get("session")
+            try:
+                userbot = Client(":userbot:", api_id=API_ID, api_hash=API_HASH, session_string=session)
+                await userbot.start()                
+            except:
+                return await msg.edit_text("Please login in bot...")
+        else:
+            await msg.edit_text("Login in bot first ...")
+            return
+
+        try:
+            if 't.me/+' in link:
+                q = await userbot_join(userbot, link)
+                await msg.edit_text(q)
+                return
+                                        
+            if 't.me/' in link:
+                await get_msg(userbot, user_id, msg.id, link, 0, message)
+        except Exception as e:
+            await msg.edit_text(f"Link: `{link}`\n\n**Error:** {str(e)}")
+                    
+    except FloodWait as fw:
+        await msg.edit_text(f'Try again after {fw.value} seconds due to floodwait from telegram.')
+    except Exception as e:
+        await msg.edit_text(f"Link: `{link}`\n\n**Error:** {str(e)}")
+
+
+users_loop = {}
+
+async def batch_link(app, message):
+    user_id = message.from_user.id    
+    lol = await chk_user(message, user_id)
+    if lol == 1:
+        return    
+        
+    start = await app.ask(message.chat.id, text="Please send the start link.")
+    start_id = start.text
+    s = start_id.split("/")[-1]
+    cs = int(s)
+    
+    last = await app.ask(message.chat.id, text="Please send the end link.")
+    last_id = last.text
+    l = last_id.split("/")[-1]
+    cl = int(l)
+
+    if cl - cs > 1000:
+        await app.send_message(message.chat.id, "Only 1000 messages allowed in batch size... Make sure your start and end message have difference less than 1000")
+        return
+    
+    try:     
+        data = await mcollection.access_data(user_id)
+        
+        if data and data.get("session"):
+            session = data.get("session")
+            try:
+                userbot = Client(":userbot:", api_id=API_ID, api_hash=API_HASH, session_string=session)
+                await userbot.start()                
+            except:
+                return await app.send_message(message.chat.id, "Please generate a new session.")
+        else:
+            return await app.send_message(message.chat.id, "Please generate a session first.")
+
+        try:
+            users_loop[user_id] = True
+            
+            for i in range(int(s), int(l) + 1):
+                if user_id in users_loop and users_loop[user_id]:
+                    msg = await app.send_message(message.chat.id, "Processing!")
+                    try:
+                        x = start_id.split('/')
+                        y = x[:-1]
+                        result = '/'.join(y)
+                        url = f"{result}/{i}"
+                        link = get_link(url)
+                        await get_msg(userbot, user_id, msg.id, link, 0, message)
+                        sleep_msg = await app.send_message(message.chat.id, "Sleeping for 10 seconds to avoid flood...")
+                        await asyncio.sleep(8)
+                        await sleep_msg.delete()
+                        await asyncio.sleep(2)                                                
+                    except Exception as e:
+                        print(f"Error processing link {url}: {e}")
+                        continue
+                else:
+                    break
+            await app.send_message(message.chat.id, "Batch Completed.")   
+        except Exception as e:
+            await app.send_message(message.chat.id, f"Error: {str(e)}")
+                    
+    except FloodWait as fw:
+        await app.send_message(message.chat.id, f'Try again after {fw.value} seconds due to floodwait from Telegram.')
+    except Exception as e:
+        await app.send_message(message.chat.id, f"Error: {str(e)}")
+
+async def stop_batch(app, message):
+    user_id = message.chat.id
+    if user_id in users_loop:
+        users_loop[user_id] = False
+        await app.send_message(message.chat.id, "Batch processing stopped.")
+    else:
+        await app.send_message(message.chat.id, "No active batch processing to stop.")
     
     
 def thumbnail(sender):
