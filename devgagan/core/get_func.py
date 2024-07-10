@@ -19,6 +19,8 @@ from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP, API_ID, API
 import cv2
 from telethon import events, Button
 
+users_loop = {}
+
 @app.on_message(filters.regex(r'https?://[^\s]+'))
 async def single_link(app, message):
     user_id = message.from_user.id
@@ -63,8 +65,6 @@ async def single_link(app, message):
     except Exception as e:
         await msg.edit_text(f"Link: `{link}`\n\n**Error:** {str(e)}")
 
-
-users_loop = {}
 
 async def batch_link(app, message):
     user_id = message.from_user.id    
