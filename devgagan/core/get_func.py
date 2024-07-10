@@ -13,13 +13,23 @@ from devgagan.core.func import *
 from devgagan.core.mongo.users_db import db, get_users, add_user, get_user
 from devgagan.core.mongo.db import set_channel, remove_channel, set_thumbnail, remove_thumbnail, set_caption, remove_caption
 from devgagan.modules.login import generate_session
-# from devgagan.modules.main import batch_link, stop_batch
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from config import MONGO_DB as MONGODB_CONNECTION_STRING, LOG_GROUP, API_ID, API_HASH
 import cv2
 from telethon import events, Button
 
 # ------------------------ Button Mode Editz FOR SETTINGS ----------------------------
+
+# Initialize the dictionary to store user caption
+user_caption_preferences = {}
+
+users_loop = {}
+
+# Initialize the dictionary to store user sessions
+sessions = {}
+
+# Define a dictionary to store user chat IDs
+user_chat_ids = {}
 
 # MongoDB database name and collection name
 DB_NAME = "smart_users"
@@ -29,6 +39,20 @@ COLLECTION_NAME = "super_user"
 mongo_client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
 md = mongo_client[DB_NAME]
 collection = md[COLLECTION_NAME]
+
+# MongoDB database name and collection name
+MDB_NAME = "logins"
+MCOLLECTION_NAME = "stringsession"
+
+# Establish a connection to MongoDB
+m_client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
+mdb = m_client[MDB_NAME]
+mcollection = mdb[MCOLLECTION_NAME]
+
+
+SET_PIC = "settings.jpg"
+MESS = "Customize by your end and Configure your settings ..."
+
 
 def load_authorized_users():
     """
@@ -49,31 +73,6 @@ def save_authorized_users(authorized_users):
         collection.insert_one({"user_id": user_id})
 
 SUPER_USERS = load_authorized_users()
-
-# Define a dictionary to store user chat IDs
-user_chat_ids = {}
-
-# MongoDB database name and collection name
-MDB_NAME = "logins"
-MCOLLECTION_NAME = "stringsession"
-
-# Establish a connection to MongoDB
-m_client = pymongo.MongoClient(MONGODB_CONNECTION_STRING)
-mdb = m_client[MDB_NAME]
-mcollection = mdb[MCOLLECTION_NAME]
-
-# Initialize the dictionary to store user caption
-user_caption_preferences = {}
-
-users_loop = {}
-
-
-# Initialize the dictionary to store user sessions
-
-sessions = {}
-
-SET_PIC = "settings.jpg"
-MESS = "Customize by your end and Configure your settings ..."
 
 setting_buttons = InlineKeyboardMarkup(
     [
